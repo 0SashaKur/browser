@@ -1,0 +1,29 @@
+/* :root {
+    --primary: #7028E3;
+    --primary_hover: #5826aa;
+    --secondary: #9452DC;
+    --tertiary: #AA6DD7;
+    --support: #C78FD1;
+    --light_accent: #E5B2CA;
+    --font_color: #4A1C59;
+} */
+
+QLineEdit {
+    border: 2px solid --primary;
+    border-radius: 5px;
+    padding: 2.5px;
+    font-size: 12px;
+}
+
+QPushButton {
+    background-color: --primary;
+    color: white;
+    border: none;
+    padding: 2.5px;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+QPushButton:hover {
+    background-color: --primary_hover;
+}
