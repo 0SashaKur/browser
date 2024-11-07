@@ -1,6 +1,6 @@
 from datetime import datetime
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QMainWindow, QPushButton
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidgetItem
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from manager.url_manager import URLManager
 from ui import Ui_MainWindow, load_ui_files
