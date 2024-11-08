@@ -27,3 +27,9 @@ QPushButton {
 QPushButton:hover {
     background-color: --primary_hover;
 }
+QTabBar::close-button {
+    image: url(css/img/close.png);
+}
+QTabBar::close-button:hover {
+    image: url(css/img/close_hover.png);  /* Couleur de fond rouge clair au survol */
+}

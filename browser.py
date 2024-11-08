@@ -1,6 +1,6 @@
 from datetime import datetime
 from PyQt5.QtCore import QUrl
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidgetItem
+from PyQt5.QtWidgets import QMainWindow, QPushButton, QListWidgetItem, QWidget, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, QWebEnginePage
 from manager.url_manager import URLManager
 from ui import Ui_MainWindow, load_ui_files
@@ -28,13 +28,16 @@ class Browser(QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setup_ui(self)
 
+        # Assurez-vous que self.ui.tabs est bien initialisé dans setup_ui
+        self.tabs = self.ui.tabs
+
         self.load_homepage()
 
         self.browser.loadFinished.connect(self.on_page_load)
-        self.ui.go_button.clicked.connect(self.navigate_to_url)
-        self.ui.back_button.clicked.connect(self.browser.back)
-        self.ui.forward_button.clicked.connect(self.browser.forward)
-        self.ui.refresh_button.clicked.connect(self.browser.reload)
+        # self.ui.go_button.clicked.connect(self.navigate_to_url)
+        self.ui.back_button.clicked.connect(self.navigate_back)
+        self.ui.forward_button.clicked.connect(self.navigate_forward)
+        self.ui.refresh_button.clicked.connect(self.refresh_current_tab)
         self.ui.history_button.clicked.connect(self.toggle_history)
 
         load_ui_files('ui_dos')
@@ -46,17 +49,31 @@ class Browser(QMainWindow):
         # Connecter le signal url_selected à la méthode load_url_from_history
         self.history_widget.url_selected.connect(self.load_url_from_history)
 
+        self.ui.tabs.currentChanged.connect(self.update_url_placeholder)  # Connecter le changement d'onglet
+
+        self.ui.tabs.tabBar().setTabsClosable(True)  # Permettre la fermeture des onglets
+        self.ui.tabs.tabBar().tabCloseRequested.connect(self.close_tab)  # Connecter le signal de fermeture
+
+    def add_tab(self, title, url):
+        tab = QWebEngineView()
+        tab.setPage(QWebEnginePage(self.web_profile, tab))
+        tab.loadFinished.connect(self.on_page_load)  # Connecter le signal pour chaque nouvel onglet
+        self.navigate_to_url(url, tab)
+        self.ui.tabs.addTab(tab, title)
+
     def load_homepage(self):
         self.browser.setUrl(QUrl(self.url_manager.get_homepage()))
 
-    def navigate_to_url(self):
-        url = self.ui.url_bar.text()
+    def navigate_to_url(self, url, tab=None):
+        if tab is None:
+            tab = self.tabs.currentWidget()
         if not url.startswith('http://') and not url.startswith('https://'):
-            url = 'http://' + url
-        self.browser.setUrl(QUrl(url))
+            url = 'https://' + url
+        tab.setUrl(QUrl(url))
 
     def load_url_from_history(self, url):
-        self.browser.setUrl(QUrl(url))  # Charger l'URL sélectionnée
+        current_tab = self.tabs.currentWidget()
+        current_tab.setUrl(QUrl(url))  # Charger l'URL sélectionnée dans l'onglet actuel
 
     def add_to_history(self, url, page_name):
         if url not in [entry[0] for entry in self.history_manager.get_history()]:
@@ -69,11 +86,45 @@ class Browser(QMainWindow):
     def toggle_history(self):
         self.history_widget.setVisible(not self.history_widget.isVisible())
 
-    def on_page_load(self):
-        current_url = self.browser.url().toString()
-        page_name = self.browser.title()
-        self.add_to_history(current_url, page_name)
+    def on_page_load(self, success):
+        if success:  # Vérifiez si le chargement a réussi
+            current_tab = self.tabs.currentWidget()
+            current_url = current_tab.url().toString()
+            page_name = current_tab.title()
+            self.add_to_history(current_url, page_name)
+            index = self.ui.tabs.indexOf(current_tab)  # Obtenir l'index de l'onglet
+            self.set_tab_name(current_tab, page_name)  # Changer le nom de l'onglet
+            self.ui.url_bar.setText(current_url)  # Mettre à jour le placeholder avec l'URL actuelle
+
+    def set_tab_name(self, tab, name):
+        index = self.ui.tabs.indexOf(tab)  # Obtenir l'index de l'onglet
+        self.ui.tabs.setTabText(index, name)  # Changer le nom de l'onglet
 
     def closeEvent(self, event):
         self.history_manager.close()
         super().closeEvent(event)
+
+    def update_url_placeholder(self, index):
+        current_tab = self.tabs.widget(index)  # Obtenir l'onglet actuel
+        if current_tab:
+            current_url = current_tab.url().toString()  # Obtenir l'URL de l'onglet
+            self.ui.url_bar.setText(current_url)  # Mettre à jour le placeholder avec l'URL actuelle
+
+    def navigate_back(self):
+        current_tab = self.tabs.currentWidget()  # Obtenir l'onglet actuel
+        if current_tab:
+            current_tab.back()  # Appeler la méthode back sur l'onglet actuel
+
+    def navigate_forward(self):
+        current_tab = self.tabs.currentWidget()  # Obtenir l'onglet actuel
+        if current_tab:
+            current_tab.forward()  # Appeler la méthode forward sur l'onglet actuel
+
+    def refresh_current_tab(self):
+        current_tab = self.tabs.currentWidget()  # Obtenir l'onglet actuel
+        if current_tab:
+            current_tab.reload()  # Appeler la méthode reload sur l'onglet actuel
+
+    def close_tab(self, index):
+        if index >= 0:  # Vérifier que l'index est valide
+            self.ui.tabs.removeTab(index)  # Fermer l'onglet à l'index donné
