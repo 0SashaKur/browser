@@ -9,6 +9,12 @@ class HistoryWidget(QWidget):
         self.setWindowTitle("Historique")
         self.setGeometry(100, 100, 400, 300)
 
+        self.set_history(history)
+
+        # Connecter le signal de clic
+        self.list_widget.itemClicked.connect(self.on_item_clicked)
+
+    def set_history(self, history):
         layout = QVBoxLayout()
         self.list_widget = QListWidget()
 
@@ -20,9 +26,6 @@ class HistoryWidget(QWidget):
 
         layout.addWidget(self.list_widget)
         self.setLayout(layout)
-
-        # Connecter le signal de clic
-        self.list_widget.itemClicked.connect(self.on_item_clicked)
 
     def on_item_clicked(self, item):
         url = item.data(1)  # Récupérer l'URL stockée

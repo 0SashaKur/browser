@@ -60,9 +60,11 @@ class Browser(QMainWindow):
 
     def add_to_history(self, url, page_name):
         if url not in [entry[0] for entry in self.history_manager.get_history()]:
-            self.history_manager.add_to_history(url, page_name)
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            self.history_widget.list_widget.insertItem(0, f"{timestamp} - {page_name} - {url}")
+            self.history_manager.add_to_history(url, page_name)
+            item = QListWidgetItem(f"{timestamp} - {page_name}")
+            item.setData(1, url)  # Stocker l'URL dans l'élément
+            self.history_widget.list_widget.insertItem(0, item)
 
     def toggle_history(self):
         self.history_widget.setVisible(not self.history_widget.isVisible())
