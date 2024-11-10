@@ -71,15 +71,22 @@ class Ui_MainWindow:
         return h_layout
 
     def sidebar_layout(self):
-        # Créer une barre latérale
-
-        self.history_button = QPushButton("H")
+        self.non_button = QPushButton(" ")
         self.new_tab = QPushButton("+")
-        self.history_button.setFixedWidth(30)  # Réduire la largeur du bouton
+        self.history_button = QPushButton("H")
+        self.download_button = QPushButton("D")
+
+        self.non_button.setFixedWidth(30)  # Réduire la largeur du bouton
         self.new_tab.setFixedWidth(30)  # Réduire la largeur du bouton
+        self.history_button.setFixedWidth(30)  # Réduire la largeur du bouton
+        self.download_button.setFixedWidth(30);
+
         sidebar_layout = QVBoxLayout()
-        sidebar_layout.addWidget(self.history_button)
+        sidebar_layout.addWidget(self.non_button)
         sidebar_layout.addWidget(self.new_tab)
+        sidebar_layout.addWidget(self.history_button)
+        sidebar_layout.addWidget(self.download_button)
+
         sidebar_layout.addStretch()
         return sidebar_layout
 
